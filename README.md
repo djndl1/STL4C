@@ -2,13 +2,13 @@
 
 # Development Progress
 
-[x] `array`: a wrapper around the built-in array
+- [x] `array`: a wrapper around the built-in array
 
-[x] `vector`: a dynamic array
+- [x] `vector`: a dynamic array
 
-[x] `list`: a doubly-linked list
+- [x] `list`: a doubly-linked list
 
-[ ] `forward_list`: a singly-linked list
+- [ ] `forward_list`: a singly-linked list
 
 
 
