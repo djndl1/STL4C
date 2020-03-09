@@ -1,10 +1,14 @@
 # STL for C: A STL-like generic library implemented in C (In Development)
 
-[#] `array`: a wrapper around the built-in array
+# Development Progress
 
-[#] `vector`: a dynamic array
+[x] `array`: a wrapper around the built-in array
 
-[#] `list`: a doubly-linked list
+[x] `vector`: a dynamic array
+
+[x] `list`: a doubly-linked list
+
+[ ] `forward_list`: a singly-linked list
 
 
 
