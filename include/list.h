@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../lib/xmalloc.h"
+#include "xmalloc.h"
 #include "utils.h"
 
 #include <string.h>
@@ -68,7 +68,7 @@
                                                                                \
   void type##_list_insert(type##_list_t *self, type##_list_node_t *pos,        \
                           type data) {                                         \
-    list_node_new(data, pos->prev, pos, n);                                    \
+      list_node_new(type, data, pos->prev, pos, n);                     \
     pos->prev->next = n;                                                       \
     pos->prev = n;                                                             \
     self->sz++;                                                                \
@@ -108,8 +108,8 @@
   void type##_list_splice(type##_list_t *self, type##_list_node_t *pos,        \
                           type##_list_t *other,                         \
                           type##_list_node_t *first, type##_list_node_t *last) { \
-    if (!other || !first || first == other.head || !pos || (last == first) ||  \
-        other.sz == 0)                                                         \
+    if (!other || !first || first == other->head || !pos || (last == first) ||  \
+        other->sz == 0)                                                         \
       return;                                                                  \
                                                                                \
     size_t len = 0;                                                            \
@@ -129,21 +129,21 @@
     type##_list_node_t *cut_other = first->prev;                        \
     cut_other->next = last;                                             \
     last->prev = cut_other;                                             \
-    other.sz -= len;                                                    \
+    other->sz -= len;                                                    \
                                                                                \
     type##_list_node_t *right_cut = pos->next;                          \
     pos->next = first;                                                  \
     first->prev = pos;                                                  \
     tmp_tail->next = right_cut;                                         \
     right_cut->prev = tmp_tail;                                         \
-    self.sz += len;                                                     \
+    self->sz += len;                                                     \
   }                                                                     \
                                                                         \
-  void type##_list_unique(type##_list_t* self, type##_binary_predicate pred) \
+  void type##_list_unique(type##_list_t* self, bool (*pred)(type, type))     \
   {                                                                     \
           type##_list_node_t* cur = self->head->next;                   \
           while (cur != self->tail) {                                   \
-                  data cur_data = cur->data;                            \
+                  type cur_data = cur->data;                            \
                                                                         \
                   while (cur->next != self->tail && pred(cur_data, cur->next->data)) { \
                           list_erase(type, *self, cur->next);           \
@@ -173,7 +173,7 @@
  * the data
  */
 #define list_for_each_next(type, cur, list)                 \
-        for (type##_list_node_t *cur = (list).head->next,;          \
+        for (type##_list_node_t *cur = (list).head->next;          \
              cur != (list).tail;                                    \
              cur = cur->next)
 
@@ -243,4 +243,5 @@
 
 #define list_splice(type, list, pos, other, first, last)     \
         list_ops(type, splice)(&list, pos, &other, first, last)
+
 
