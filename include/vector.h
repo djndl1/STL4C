@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../lib/xmalloc.h"
+#include "xmalloc.h"
 #include "utils.h"
 
 #include <string.h>
