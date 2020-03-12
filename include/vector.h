@@ -2,6 +2,7 @@
 
 #include "xmalloc.h"
 #include "utils.h"
+#include "common.h"
 
 #include <string.h>
 
@@ -26,21 +27,22 @@
     void (*elem_dtor)(type *);                                                 \
     size_t elem_size;                                                          \
   };                                                                           \
-                                                                        \
-  type##_vector_t type##_vector_new(size_t size, void (*destr)(type*))    \
-  {                                                                     \
-  type##_vector_t var;                                                  \
-  (var).data = xcalloc(size, sizeof(type));                             \
-                                                                        \
-  (var).sz = size;                                                      \
-  (var).space = size;                                                   \
-  (var).elem_size = sizeof(type);                                       \
-  (var).elem_dtor = destr;                                              \
-                                                                        \
-  return var;                                                           \
-  }                                                                     \
                                                                                \
-  void type##_vector_reserve(type##_vector_t *self, size_t new_cap) {          \
+  STL4C_WEAK_SYM type##_vector_t type##_vector_new(size_t size,                \
+                                                   void (*destr)(type *)) {    \
+    type##_vector_t var;                                                       \
+    (var).data = xcalloc(size, sizeof(type));                                  \
+                                                                               \
+    (var).sz = size;                                                           \
+    (var).space = size;                                                        \
+    (var).elem_size = sizeof(type);                                            \
+    (var).elem_dtor = destr;                                                   \
+                                                                               \
+    return var;                                                                \
+  }                                                                            \
+                                                                               \
+  STL4C_WEAK_SYM void type##_vector_reserve(type##_vector_t *self,             \
+                                            size_t new_cap) {                  \
     if (self->space >= new_cap)                                                \
       return;                                                                  \
                                                                                \
@@ -48,25 +50,24 @@
     self->space = new_cap;                                                     \
   }                                                                            \
                                                                                \
-  void type##_vector_insert(type##_vector_t *self, size_t pos, type value) { \
-      if (pos > self->sz)                                               \
-          return;                                                       \
-      if (self->space <= self->sz)                                      \
-          vector_reserve(type, *self, 2 * self->space);                 \
-      for (size_t i = self->sz; i > pos; i--)                           \
-          self->data[i] = self->data[i - 1];                            \
-      self->data[pos] = value;                                          \
-      self->sz++;                                                       \
-}                                                                       \
-                                                                        \
-  void type##_vector_erase(type##_vector_t *self, size_t pos)           \
-  {                                                                     \
-      if (self->sz == 0 || pos > self->sz)                              \
-          return;                                                       \
-      if (self->elem_dtor)                                              \
-          self->elem_dtor(&self->data[pos]);                            \
-      vector_for_range(pos, --self->sz, i)                                \
-          self->data[i] = self->data[i+1];                              \
+  STL4C_WEAK_SYM void type##_vector_insert(type##_vector_t *self, size_t pos,  \
+                                           type value) {                       \
+    if (pos > self->sz)                                                        \
+      return;                                                                  \
+    if (self->space <= self->sz)                                               \
+      vector_reserve(type, *self, 2 * self->space);                            \
+    for (size_t i = self->sz; i > pos; i--)                                    \
+      self->data[i] = self->data[i - 1];                                       \
+    self->data[pos] = value;                                                   \
+    self->sz++;                                                                \
+  }                                                                            \
+                                                                               \
+  STL4C_WEAK_SYM void type##_vector_erase(type##_vector_t *self, size_t pos) {  \
+    if (self->sz == 0 || pos > self->sz)                                       \
+      return;                                                                  \
+    if (self->elem_dtor)                                                       \
+      self->elem_dtor(&self->data[pos]);                                       \
+    vector_for_range(pos, --self->sz, i) self->data[i] = self->data[i + 1];    \
   }
 
 #define vector_capacity(vec) ((vec).space)

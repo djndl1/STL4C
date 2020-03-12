@@ -2,6 +2,7 @@
 
 #include "xmalloc.h"
 #include "utils.h"
+#include "common.h"
 
 #include <string.h>
 #include <stdbool.h>
@@ -16,7 +17,7 @@
     type##_list_node_t *next;                                                  \
   };                                                                           \
                                                                                \
-  type##_list_node_t *type##_list_node_new(                                    \
+  STL4C_WEAK_SYM type##_list_node_t *type##_list_node_new(                     \
       type data, type##_list_node_t *prev, type##_list_node_t *next) {         \
     type##_list_node_t *n = xmalloc(sizeof(type##_list_node_t));               \
     n->data = data;                                                            \
@@ -39,7 +40,7 @@
     void (*elem_dtor)(type *);                                                 \
   };                                                                           \
                                                                                \
-  type##_list_t type##_list_new(void (*elem_dtor)(type *)) {                   \
+  STL4C_WEAK_SYM type##_list_t type##_list_new(void (*elem_dtor)(type *)) {    \
     type##_list_node_t *head = xmalloc(sizeof(type##_list_node_t));            \
     type##_list_node_t *tail = xmalloc(sizeof(type##_list_node_t));            \
     head->prev = head;                                                         \
@@ -56,7 +57,7 @@
     return l;                                                                  \
   }                                                                            \
                                                                                \
-  void type##_list_delete(type##_list_t *self) {                               \
+  STL4C_WEAK_SYM void type##_list_delete(type##_list_t *self) {                \
     if (self->elem_dtor) {                                                     \
       list_for_each_next(type, it, *self) self->elem_dtor(&(it->data));        \
     }                                                                          \
@@ -66,22 +67,22 @@
     self->elem_dtor = NULL;                                                    \
   }                                                                            \
                                                                                \
-  void type##_list_insert(type##_list_t *self, type##_list_node_t *pos,        \
-                          type data) {                                         \
-      list_node_new(type, data, pos->prev, pos, n);                     \
+  STL4C_WEAK_SYM void type##_list_insert(type##_list_t *self,                  \
+                                         type##_list_node_t *pos, type data) { \
+    list_node_new(type, data, pos->prev, pos, n);                              \
     pos->prev->next = n;                                                       \
     pos->prev = n;                                                             \
     self->sz++;                                                                \
   }                                                                            \
                                                                                \
-  type##_list_node_t *type##_list_erase(type##_list_t *self,                   \
-                                        type##_list_node_t *pos) {             \
+  STL4C_WEAK_SYM type##_list_node_t *type##_list_erase(                        \
+      type##_list_t *self, type##_list_node_t *pos) {                          \
     if (!pos || self->sz == 0)                                                 \
       return NULL;                                                             \
     type##_list_node_t *prior = pos->prev;                                     \
     type##_list_node_t *posterior = pos->next;                                 \
     prior->next = posterior;                                                   \
-    posterior->prev = prior;                                            \
+    posterior->prev = prior;                                                   \
     if (self->elem_dtor)                                                       \
       self->elem_dtor(&(pos->data));                                           \
     pos->next = pos->prev = NULL;                                              \
@@ -91,7 +92,7 @@
     return posterior;                                                          \
   }                                                                            \
                                                                                \
-  void type##_list_reverse(type##_list_t *self) {                              \
+  STL4C_WEAK_SYM void type##_list_reverse(type##_list_t *self) {               \
     if (self->sz <= 1)                                                         \
       return;                                                                  \
     type##_list_node_t *cur = self->head;                                      \
@@ -105,11 +106,11 @@
     basic_swap(type##_list_node_t *, self->head, self->tail);                  \
   }                                                                            \
                                                                                \
-  void type##_list_splice(type##_list_t *self, type##_list_node_t *pos,        \
-                          type##_list_t *other,                         \
-                          type##_list_node_t *first, type##_list_node_t *last) { \
-    if (!other || !first || first == other->head || !pos || (last == first) ||  \
-        other->sz == 0)                                                         \
+  STL4C_WEAK_SYM void type##_list_splice(                                      \
+      type##_list_t *self, type##_list_node_t *pos, type##_list_t *other,      \
+      type##_list_node_t *first, type##_list_node_t *last) {                   \
+    if (!other || !first || first == other->head || !pos || (last == first) || \
+        other->sz == 0)                                                        \
       return;                                                                  \
                                                                                \
     size_t len = 0;                                                            \
@@ -122,34 +123,34 @@
       }                                                                        \
       len++;                                                                   \
     }                                                                          \
-    if (!range_avail)                                                   \
-            last = other->tail;                                         \
-    type##_list_node_t *tmp_tail = last->prev;                          \
-                                                                        \
-    type##_list_node_t *cut_other = first->prev;                        \
-    cut_other->next = last;                                             \
-    last->prev = cut_other;                                             \
-    other->sz -= len;                                                    \
+    if (!range_avail)                                                          \
+      last = other->tail;                                                      \
+    type##_list_node_t *tmp_tail = last->prev;                                 \
                                                                                \
-    type##_list_node_t *right_cut = pos->next;                          \
-    pos->next = first;                                                  \
-    first->prev = pos;                                                  \
-    tmp_tail->next = right_cut;                                         \
-    right_cut->prev = tmp_tail;                                         \
-    self->sz += len;                                                     \
-  }                                                                     \
-                                                                        \
-  void type##_list_unique(type##_list_t* self, bool (*pred)(type, type))     \
-  {                                                                     \
-          type##_list_node_t* cur = self->head->next;                   \
-          while (cur != self->tail) {                                   \
-                  type cur_data = cur->data;                            \
-                                                                        \
-                  while (cur->next != self->tail && pred(cur_data, cur->next->data)) { \
-                          list_erase(type, *self, cur->next);           \
-                  }                                                     \
-                  cur = cur->next;                                      \
-          }                                                             \
+    type##_list_node_t *cut_other = first->prev;                               \
+    cut_other->next = last;                                                    \
+    last->prev = cut_other;                                                    \
+    other->sz -= len;                                                          \
+                                                                               \
+    type##_list_node_t *right_cut = pos->next;                                 \
+    pos->next = first;                                                         \
+    first->prev = pos;                                                         \
+    tmp_tail->next = right_cut;                                                \
+    right_cut->prev = tmp_tail;                                                \
+    self->sz += len;                                                           \
+  }                                                                            \
+                                                                               \
+  STL4C_WEAK_SYM void type##_list_unique(type##_list_t *self,                   \
+                                        bool (*pred)(type, type)) {            \
+    type##_list_node_t *cur = self->head->next;                                \
+    while (cur != self->tail) {                                                \
+      type cur_data = cur->data;                                               \
+                                                                               \
+      while (cur->next != self->tail && pred(cur_data, cur->next->data)) {     \
+        list_erase(type, *self, cur->next);                                    \
+      }                                                                        \
+      cur = cur->next;                                                         \
+    }                                                                          \
   }
 
 #define list_node_new(type, data, prev, next, var)  \
