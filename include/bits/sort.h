@@ -1,22 +1,14 @@
 #pragma once
 
-#define basic_comparator_register(type)                                        \
-  STL4C_WEAK_SYM bool stl4c_##type##_less(const type a, const type b) {         \
-    return a < b;                                                              \
-  }                                                                            \
-                                                                               \
-  STL4C_WEAK_SYM bool stl4c_##type##_equal(const type a, const type b) {       \
-    return a == b;                                                             \
-  }                                                                            \
-                                                                               \
-  STL4C_WEAK_SYM bool stl4c_##type##_greater(const type a, const type b) {     \
-    return a > b;                                                              \
-  }
+#include "common.h"
+
+#include "functional.h"
 
 #define sort_type_register(type, container)                                    \
+                                                                        \
   STL4C_WEAK_SYM ITER_TYPE(type, container)                                     \
-  stl4c_##type##_##container##_certain_element(                                \
-      ITER_TYPE(type, container) first, ITER_TYPE(type, container) last,       \
+      FUNC_NAME(type##_##container, certain_element)
+(ITER_TYPE(type, container) first, ITER_TYPE(type, container) last,       \
       bool (*pred)(const type, const type)) {                                  \
     if (first == last)                                                         \
       return first;                                                            \
@@ -26,4 +18,6 @@
         certain = first;                                                       \
     }                                                                          \
     return certain;                                                            \
-  }
+}                                                                       \
+                                                                        \
+

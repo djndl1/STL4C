@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common.h"
+
 #define non_mutating_algorithm_register(type, container)                       \
   STL4C_WEAK_SYM void stl4c_##type##_##container##_for_each(                    \
       ITER_TYPE(type, container) first, ITER_TYPE(type, container) last,       \
@@ -29,4 +31,20 @@
         cnt++;                                                                 \
     }                                                                          \
     return cnt;                                                                \
+  }                                                                     \
+                                                                        \
+  STL4C_WEAK_SYM ITER_TYPE(type, container) FUNC_NAME(type##_##container, adjacent_find_pred)\
+      (ITER_TYPE(type, container) first, ITER_TYPE(type, container) last, bool (*pred)(const type, const type)) \
+  {                                                                     \
+      if (first == last)                                                \
+          return last;                                                  \
+                                                                        \
+      ITER_TYPE(type, container) next = first;                          \
+      ITER_NEXT(container, next);                                       \
+      for (; next != last; ITER_NEXT(container, first), ITER_NEXT(container, next)) { \
+          if (pred(ITER_DEREF(container, first), ITER_DEREF(container, next))) \
+              return first;                                             \
+      }                                                                 \
   }
+  
+ 
