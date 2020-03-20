@@ -3,7 +3,10 @@
 #include <stdbool.h>
 
 #define basic_swap(type, a, b)                         \
-    { type tmp = a; a = b; b = tmp; }
+    do { type tmp = a; a = b; b = tmp; } while(0)
+
+#define basic_max(type, a, b) ((a < b) ? b : a)
+#define basic_min(type, a, b) ((a < b) ? a : b)
 
 #define type_predicate_register(type)                                          \
   typedef bool (*type##_binary_predicate)(type, type);                         \
